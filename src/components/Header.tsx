@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Check, CloudOff, Download, RefreshCw, ShoppingBag } from 'lucide-react';
 import { onSaveStatusChange } from '../services/db';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
@@ -32,8 +33,8 @@ export const Header: React.FC = () => {
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-xs">
       <div className="max-w-md mx-auto flex items-center justify-between">
         {/* App Title & Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-sm shadow-emerald-700/20">
+        <Link to="/" className="flex items-center gap-2.5 active:scale-98 transition group cursor-pointer" title="হোম ড্যাশবোর্ড">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-sm shadow-emerald-700/20 group-hover:opacity-95 transition">
             <ShoppingBag className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -49,7 +50,7 @@ export const Header: React.FC = () => {
               অফলাইন মেমো ম্যানেজার
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Status Indicators & Install Button */}
         <div className="flex items-center gap-2">

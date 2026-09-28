@@ -1,28 +1,60 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Home, ShoppingCart, Pill, BookMarked, Settings } from 'lucide-react';
 import { ActiveTab } from '../types';
 
 interface BottomNavProps {
-  activeTab: ActiveTab;
-  onTabChange: (tab: ActiveTab) => void;
+  activeTab?: ActiveTab;
+  onTabChange?: (tab: ActiveTab) => void;
   marketPendingCount?: number;
   medicineNeededCount?: number;
   savedMemosCount?: number;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
-  activeTab,
+  activeTab: propActiveTab,
   onTabChange,
   marketPendingCount = 0,
   medicineNeededCount = 0,
   savedMemosCount = 0,
 }) => {
+  const location = useLocation();
+
+  // Determine current active tab from router pathname
+  const currentTab: ActiveTab = (() => {
+    const p = location.pathname.toLowerCase();
+    if (p === '/market' || p === '/grocery') return 'market';
+    if (p === '/medicine') return 'medicine';
+    if (p === '/saved' || p === '/memos' || p === '/saved-memos') return 'saved';
+    if (p === '/settings') return 'settings';
+    if (p === '/' || p === '') return 'home';
+    return propActiveTab || 'home';
+  })();
+
   const tabs = [
-    { id: 'home' as ActiveTab, label: 'হোম', icon: Home, badge: null },
-    { id: 'market' as ActiveTab, label: 'বাজার', icon: ShoppingCart, badge: marketPendingCount > 0 ? marketPendingCount : null },
-    { id: 'medicine' as ActiveTab, label: 'ঔষধ', icon: Pill, badge: medicineNeededCount > 0 ? medicineNeededCount : null },
-    { id: 'saved' as ActiveTab, label: 'সংরক্ষিত', icon: BookMarked, badge: savedMemosCount > 0 ? savedMemosCount : null },
-    { id: 'settings' as ActiveTab, label: 'সেটিংস', icon: Settings, badge: null },
+    { id: 'home' as ActiveTab, path: '/', label: 'হোম', icon: Home, badge: null },
+    {
+      id: 'market' as ActiveTab,
+      path: '/market',
+      label: 'বাজার',
+      icon: ShoppingCart,
+      badge: marketPendingCount > 0 ? marketPendingCount : null,
+    },
+    {
+      id: 'medicine' as ActiveTab,
+      path: '/medicine',
+      label: 'ঔষধ',
+      icon: Pill,
+      badge: medicineNeededCount > 0 ? medicineNeededCount : null,
+    },
+    {
+      id: 'saved' as ActiveTab,
+      path: '/saved',
+      label: 'সংরক্ষিত',
+      icon: BookMarked,
+      badge: savedMemosCount > 0 ? savedMemosCount : null,
+    },
+    { id: 'settings' as ActiveTab, path: '/settings', label: 'সেটিংস', icon: Settings, badge: null },
   ];
 
   return (
@@ -30,12 +62,16 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       <div className="max-w-md mx-auto grid grid-cols-5 h-16">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
+          const isActive = currentTab === tab.id;
 
           return (
-            <button
+            <Link
               key={tab.id}
-              onClick={() => onTabChange(tab.id)}
+              to={tab.path}
+              onClick={() => {
+                onTabChange?.(tab.id);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`flex flex-col items-center justify-center relative py-1 transition-all duration-200 active:scale-95 ${
                 isActive ? 'text-emerald-700 font-bold' : 'text-slate-500 hover:text-slate-800'
               }`}
@@ -54,10 +90,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                   </span>
                 )}
               </div>
-              <span className={`text-[11px] mt-0.5 tracking-tight ${isActive ? 'font-bold text-emerald-800' : 'font-medium'}`}>
+              <span
+                className={`text-[11px] mt-0.5 tracking-tight ${
+                  isActive ? 'font-bold text-emerald-800' : 'font-medium'
+                }`}
+              >
                 {tab.label}
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>

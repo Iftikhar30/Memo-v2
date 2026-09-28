@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   ActiveTab,
   ActiveMarketState,
@@ -28,7 +29,8 @@ import { ShareModal } from './components/ShareModal';
 import { calculateMedicine } from './utils/medicineCalc';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
 
   // States
@@ -137,7 +139,7 @@ export default function App() {
         updatedAt: Date.now(),
       };
       handleUpdateMarketState(newActive);
-      setActiveTab('market');
+      navigate('/market');
     } else if (memo.type.startsWith('medicine')) {
       const newActive: ActiveMedicineState = {
         title: memo.title,
@@ -147,7 +149,7 @@ export default function App() {
         updatedAt: Date.now(),
       };
       handleUpdateMedicineState(newActive);
-      setActiveTab('medicine');
+      navigate('/medicine');
     }
   };
 
@@ -164,6 +166,16 @@ export default function App() {
     });
   }
 
+  // Determine current tab from URL
+  const currentTab: ActiveTab = (() => {
+    const p = location.pathname.toLowerCase();
+    if (p === '/market' || p === '/grocery') return 'market';
+    if (p === '/medicine') return 'medicine';
+    if (p === '/saved' || p === '/memos' || p === '/saved-memos') return 'saved';
+    if (p === '/settings') return 'settings';
+    return 'home';
+  })();
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col text-slate-900 font-sans selection:bg-emerald-200">
       {/* Top Header */}
@@ -177,72 +189,115 @@ export default function App() {
             <p className="text-xs font-bold text-slate-500">লোকাল ডাটা লোড হচ্ছে...</p>
           </div>
         ) : (
-          <>
-            {activeTab === 'home' && (
-              <HomeDashboard
-                onNavigate={(tab) => {
-                  setAutoOpenMarketAdd(false);
-                  setAutoOpenMedicineAdd(false);
-                  setActiveTab(tab);
-                }}
-                marketState={marketState}
-                medicineState={medicineState}
-                savedMemos={savedMemos}
-                settings={settings}
-                onOpenShareModal={(memo) => setSharingMemo(memo)}
-                onOpenAddMarketModal={() => {
-                  setAutoOpenMarketAdd(true);
-                  setActiveTab('market');
-                }}
-                onOpenAddMedicineModal={() => {
-                  setAutoOpenMedicineAdd(true);
-                  setActiveTab('medicine');
-                }}
-              />
-            )}
+          <Routes>
+            {/* Home Dashboard Route */}
+            <Route
+              path="/"
+              element={
+                <HomeDashboard
+                  onNavigate={(tab) => {
+                    setAutoOpenMarketAdd(false);
+                    setAutoOpenMedicineAdd(false);
+                    const target = tab === 'home' ? '/' : `/${tab}`;
+                    navigate(target);
+                  }}
+                  marketState={marketState}
+                  medicineState={medicineState}
+                  savedMemos={savedMemos}
+                  settings={settings}
+                  onOpenShareModal={(memo) => setSharingMemo(memo)}
+                  onOpenAddMarketModal={() => {
+                    setAutoOpenMarketAdd(true);
+                    navigate('/market');
+                  }}
+                  onOpenAddMedicineModal={() => {
+                    setAutoOpenMedicineAdd(true);
+                    navigate('/medicine');
+                  }}
+                />
+              }
+            />
 
-            {activeTab === 'market' && (
-              <MarketMemoView
-                marketState={marketState}
-                onUpdateState={handleUpdateMarketState}
-                onSaveAsMemo={handleSaveAsMemo}
-                onOpenShareModal={(memo) => setSharingMemo(memo)}
-                settings={settings}
-                isAddModalOpenInitially={autoOpenMarketAdd}
-              />
-            )}
+            {/* Market Memo Route */}
+            <Route
+              path="/market"
+              element={
+                <MarketMemoView
+                  marketState={marketState}
+                  onUpdateState={handleUpdateMarketState}
+                  onSaveAsMemo={handleSaveAsMemo}
+                  onOpenShareModal={(memo) => setSharingMemo(memo)}
+                  settings={settings}
+                  isAddModalOpenInitially={autoOpenMarketAdd}
+                />
+              }
+            />
 
-            {activeTab === 'medicine' && (
-              <MedicineMemoView
-                medicineState={medicineState}
-                onUpdateState={handleUpdateMedicineState}
-                onSaveAsMemo={handleSaveAsMemo}
-                onOpenShareModal={(memo) => setSharingMemo(memo)}
-                settings={settings}
-                isAddModalOpenInitially={autoOpenMedicineAdd}
-              />
-            )}
+            {/* Grocery alias for Market Memo */}
+            <Route
+              path="/grocery"
+              element={
+                <MarketMemoView
+                  marketState={marketState}
+                  onUpdateState={handleUpdateMarketState}
+                  onSaveAsMemo={handleSaveAsMemo}
+                  onOpenShareModal={(memo) => setSharingMemo(memo)}
+                  settings={settings}
+                  isAddModalOpenInitially={autoOpenMarketAdd}
+                />
+              }
+            />
 
-            {activeTab === 'saved' && (
-              <SavedMemosView
-                savedMemos={savedMemos}
-                onUpdateMemo={handleUpdateMemo}
-                onDeleteMemo={handleDeleteMemo}
-                onDuplicateMemo={handleDuplicateMemo}
-                onLoadIntoActive={handleLoadIntoActive}
-                onOpenShareModal={(memo) => setSharingMemo(memo)}
-                settings={settings}
-              />
-            )}
+            {/* Medicine Memo Route */}
+            <Route
+              path="/medicine"
+              element={
+                <MedicineMemoView
+                  medicineState={medicineState}
+                  onUpdateState={handleUpdateMedicineState}
+                  onSaveAsMemo={handleSaveAsMemo}
+                  onOpenShareModal={(memo) => setSharingMemo(memo)}
+                  settings={settings}
+                  isAddModalOpenInitially={autoOpenMedicineAdd}
+                />
+              }
+            />
 
-            {activeTab === 'settings' && (
-              <SettingsView
-                settings={settings}
-                onUpdateSettings={handleUpdateSettings}
-                onDataReset={loadInitialData}
-              />
-            )}
-          </>
+            {/* Saved Memos Route */}
+            <Route
+              path="/saved"
+              element={
+                <SavedMemosView
+                  savedMemos={savedMemos}
+                  onUpdateMemo={handleUpdateMemo}
+                  onDeleteMemo={handleDeleteMemo}
+                  onDuplicateMemo={handleDuplicateMemo}
+                  onLoadIntoActive={handleLoadIntoActive}
+                  onOpenShareModal={(memo) => setSharingMemo(memo)}
+                  settings={settings}
+                />
+              }
+            />
+
+            {/* Saved memos aliases */}
+            <Route path="/memos" element={<Navigate to="/saved" replace />} />
+            <Route path="/saved-memos" element={<Navigate to="/saved" replace />} />
+
+            {/* Settings Route */}
+            <Route
+              path="/settings"
+              element={
+                <SettingsView
+                  settings={settings}
+                  onUpdateSettings={handleUpdateSettings}
+                  onDataReset={loadInitialData}
+                />
+              }
+            />
+
+            {/* Fallback to Home for unknown routes */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         )}
       </main>
 
@@ -255,11 +310,12 @@ export default function App() {
 
       {/* Bottom Navigation */}
       <BottomNav
-        activeTab={activeTab}
+        activeTab={currentTab}
         onTabChange={(tab) => {
           setAutoOpenMarketAdd(false);
           setAutoOpenMedicineAdd(false);
-          setActiveTab(tab);
+          const target = tab === 'home' ? '/' : `/${tab}`;
+          navigate(target);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         marketPendingCount={marketPendingCount}
