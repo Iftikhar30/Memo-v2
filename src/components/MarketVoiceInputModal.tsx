@@ -24,14 +24,6 @@ interface MarketVoiceInputModalProps {
   settings: UserSettings;
 }
 
-const VOICE_EXAMPLES = [
-  'আলু ২ কেজি, পেঁয়াজ ১ কেজি, রসুন ৫০০ গ্রাম',
-  'সয়াবিন তেল ২ লিটার এবং মিনিকেট চাল ৫ কেজি',
-  'ডিম ১২ টা আর দুধ ১ লিটার আর লবণ ১ প্যাকেট',
-  'আলু ১ কেজি পেঁয়াজ ২ কেজি ডিম ১২ পিস',
-  'টমেটো ১ কেজি দর ৬০',
-];
-
 export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
   isOpen,
   onClose,
@@ -42,9 +34,10 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
   const [lang, setLang] = useState<'bn-BD' | 'en-US'>('bn-BD');
   const [autoAdd, setAutoAdd] = useState(true);
   const [parsedItems, setParsedItems] = useState<ParsedVoiceMarketItem[]>([]);
-  const [sessionAddedItems, setSessionAddedItems] = useState<
-    Array<{ name: string; quantity: number; unit: MarketUnit; price: number | null }>
-  >([]);
+  // Only holds the item(s) from the single latest voice utterance (no old history)
+  const [lastSpokenItems, setLastSpokenItems] = useState<
+    Array<{ name: string; quantity: number; unit: MarketUnit; price: number | null }> | null
+  >(null);
   const [manualFallbackText, setManualFallbackText] = useState('');
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
@@ -76,22 +69,45 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
     },
   });
 
-  // Start listening automatically when modal opens if supported
+  // Start listening when modal opens and completely clear all previous history on open/close
   useEffect(() => {
-    if (isOpen && isSupported) {
-      const timer = setTimeout(() => {
-        startListening();
-      }, 300);
-      return () => {
-        clearTimeout(timer);
-        stopListening();
-      };
+    if (isOpen) {
+      // Always start with a completely clean slate when entering
+      setParsedItems([]);
+      setLastSpokenItems(null);
+      setManualFallbackText('');
+      setSuccessToast(null);
+      resetTranscript();
+
+      if (isSupported) {
+        const timer = setTimeout(() => {
+          startListening();
+        }, 300);
+        return () => {
+          clearTimeout(timer);
+          stopListening();
+        };
+      }
     } else {
+      // Clear everything when exiting so no previous voice history remains
       stopListening();
       setParsedItems([]);
+      setLastSpokenItems(null);
+      setManualFallbackText('');
+      setSuccessToast(null);
       resetTranscript();
     }
   }, [isOpen, isSupported, startListening, stopListening, resetTranscript]);
+
+  const handleClose = () => {
+    stopListening();
+    setParsedItems([]);
+    setLastSpokenItems(null);
+    setManualFallbackText('');
+    setSuccessToast(null);
+    resetTranscript();
+    onClose();
+  };
 
   const handleCommitItems = (itemsToCommit: ParsedVoiceMarketItem[]) => {
     const valid = itemsToCommit.filter((it) => it.name.trim() && it.quantity > 0);
@@ -107,15 +123,15 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
       });
     }
 
-    setSessionAddedItems((prev) => [
-      ...valid.map((it) => ({
+    // Keep ONLY what was just spoken right now
+    setLastSpokenItems(
+      valid.map((it) => ({
         name: it.name.trim(),
         quantity: it.quantity,
         unit: it.unit,
         price: it.pricePerUnit,
-      })),
-      ...prev,
-    ]);
+      }))
+    );
 
     if (valid.length === 1) {
       setSuccessToast(
@@ -140,13 +156,6 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
     if (items.length > 0) {
       handleCommitItems(items);
       setManualFallbackText('');
-    }
-  };
-
-  const handleExampleClick = (ex: string) => {
-    const items = parseMultipleVoiceMarketItems(ex);
-    if (items.length > 0) {
-      handleCommitItems(items);
     }
   };
 
@@ -199,7 +208,7 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
             </select>
 
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"
             >
               ✕
@@ -406,42 +415,35 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
             </div>
           )}
 
-          {/* Example Suggestions */}
-          <div>
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1.5">
-              <span>যেভাবে বলবেন (উদাহরণে ট্যাপ করুন):</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {VOICE_EXAMPLES.map((ex) => (
-                <button
-                  key={ex}
-                  type="button"
-                  onClick={() => handleExampleClick(ex)}
-                  className="text-[11px] font-medium bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 border border-slate-200 text-slate-700 px-2.5 py-1 rounded-xl transition"
-                >
-                  "{ex}"
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Added in this session list */}
-          {sessionAddedItems.length > 0 && (
-            <div className="border-t border-slate-100 pt-3">
+          {/* Last Spoken / Added Item (Shows ONLY what was just spoken right now - no history accumulation) */}
+          {lastSpokenItems && lastSpokenItems.length > 0 && (
+            <div className="border-t border-slate-100 pt-3 animate-fade-in">
               <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2">
-                <span>এইমাত্র যোগ করা হয়েছে ({formatNum(sessionAddedItems.length, isBn)}টি)</span>
-                <span className="text-[10px] text-emerald-700">স্বয়ংক্রিয় সেভ হয়েছে</span>
+                <span className="flex items-center gap-1.5 text-emerald-800">
+                  <Check className="w-4 h-4 text-emerald-600" />
+                  এইমাত্র যা বলা হয়েছে ({formatNum(lastSpokenItems.length, isBn)}টি)
+                </span>
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-bold border border-emerald-200">
+                  মেমোতে যুক্ত
+                </span>
               </div>
-              <div className="max-h-28 overflow-y-auto space-y-1.5 pr-1">
-                {sessionAddedItems.map((item, idx) => (
+              <div className="space-y-1.5">
+                {lastSpokenItems.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 text-xs"
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-xs shadow-2xs"
                   >
-                    <span className="font-bold text-slate-800">{item.name}</span>
-                    <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                      {formatNum(item.quantity, isBn)} {item.unit}
-                    </span>
+                    <span className="font-extrabold text-slate-900">{item.name}</span>
+                    <div className="flex items-center gap-2">
+                      {item.price && (
+                        <span className="text-[11px] text-slate-500 font-medium">
+                          {formatCurrency(item.price, settings.currency, isBn)}/{item.unit}
+                        </span>
+                      )}
+                      <span className="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
+                        {formatNum(item.quantity, isBn)} {item.unit}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -463,8 +465,8 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
 
           <button
             type="button"
-            onClick={onClose}
-            className="py-2 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition"
+            onClick={handleClose}
+            className="py-2 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
           >
             সম্পন্ন
           </button>
