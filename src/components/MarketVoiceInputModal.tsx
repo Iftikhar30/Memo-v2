@@ -177,8 +177,14 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl border border-slate-200 max-h-[92vh] flex flex-col overflow-hidden">
+    <div
+      onClick={handleClose}
+      className="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl border border-slate-200 max-h-[92vh] flex flex-col overflow-hidden cursor-default"
+      >
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
           <div className="flex items-center gap-2">
@@ -421,10 +427,10 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
               <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2">
                 <span className="flex items-center gap-1.5 text-emerald-800">
                   <Check className="w-4 h-4 text-emerald-600" />
-                  এইমাত্র যা বলা হয়েছে ({formatNum(lastSpokenItems.length, isBn)}টি)
+                  যেটা মাত্র বললাম ({formatNum(lastSpokenItems.length, isBn)}টি)
                 </span>
                 <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-bold border border-emerald-200">
-                  মেমোতে যুক্ত
+                  মেমোতে যুক্ত হয়েছে
                 </span>
               </div>
               <div className="space-y-1.5">

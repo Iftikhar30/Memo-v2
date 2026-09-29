@@ -691,12 +691,14 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
       )}
 
       {/* Dedicated Market Voice Input Modal */}
-      <MarketVoiceInputModal
-        isOpen={isVoiceModalOpen}
-        onClose={() => setIsVoiceModalOpen(false)}
-        onAddItem={handleVoiceAddItem}
-        settings={settings}
-      />
+      {isVoiceModalOpen && (
+        <MarketVoiceInputModal
+          isOpen={isVoiceModalOpen}
+          onClose={() => setIsVoiceModalOpen(false)}
+          onAddItem={handleVoiceAddItem}
+          settings={settings}
+        />
+      )}
     </div>
   );
 };
