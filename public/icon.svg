@@ -1,97 +1,76 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Background Gradient -->
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#064e3b" />
-      <stop offset="50%" stop-color="#047857" />
-      <stop offset="100%" stop-color="#022c22" />
+    <!-- Full-bleed background gradient covering 100% of the canvas -->
+    <linearGradient id="fullBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#028c54" />
+      <stop offset="50%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#0d9488" />
     </linearGradient>
 
-    <!-- Gold Accent Gradient -->
+    <!-- Golden Highlight Gradient -->
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fef08a" />
-      <stop offset="50%" stop-color="#f59e0b" />
-      <stop offset="100%" stop-color="#d97706" />
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="100%" stop-color="#eab308" />
     </linearGradient>
 
-    <!-- Cyan/Sky Gradient for Medicine -->
-    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Medicine Capsule Gradient -->
+    <linearGradient id="capsuleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#38bdf8" />
       <stop offset="100%" stop-color="#0284c7" />
     </linearGradient>
 
-    <!-- Card/Sheet Gradient -->
-    <linearGradient id="sheetGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="100%" stop-color="#f1f5f9" />
-    </linearGradient>
-
-    <!-- Emerald Glow Filter -->
-    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.4" />
-    </filter>
-    <filter id="badgeGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#10b981" flood-opacity="0.5" />
+    <!-- Soft Depth Filter -->
+    <filter id="depthGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#022c22" flood-opacity="0.35" />
     </filter>
   </defs>
 
-  <!-- Squircle Base Canvas (Matches Android & iOS launcher shape) -->
-  <rect width="512" height="512" rx="116" fill="url(#bgGrad)" />
+  <!-- 100% Full-bleed background with no margins or black border -->
+  <rect width="512" height="512" fill="url(#fullBg)" />
 
-  <!-- Subtle Outer Border/Gaze -->
-  <rect x="8" y="8" width="496" height="496" rx="110" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="4" />
+  <!-- Center subtle radial glow -->
+  <circle cx="256" cy="256" r="220" fill="rgba(255, 255, 255, 0.12)" />
 
-  <!-- Inner Soft Radial Highlight -->
-  <circle cx="256" cy="160" r="220" fill="rgba(52, 211, 153, 0.15)" />
-
-  <!-- Main 3D Composition Group -->
-  <g filter="url(#softShadow)">
+  <!-- Main 3D Centered Logo Group -->
+  <g filter="url(#depthGlow)" transform="translate(0, -10)">
     <!-- 1. Memo / Checklist Tablet -->
-    <rect x="136" y="96" width="240" height="310" rx="36" fill="url(#sheetGrad)" stroke="#cbd5e1" stroke-width="3" />
+    <rect x="130" y="80" width="252" height="320" rx="36" fill="#ffffff" stroke="#e2e8f0" stroke-width="4" />
 
     <!-- Memo Clip (Top Header) -->
-    <rect x="206" y="76" width="100" height="36" rx="14" fill="url(#goldGrad)" stroke="#b45309" stroke-width="2" />
-    <circle cx="256" cy="94" r="8" fill="#ffffff" opacity="0.9" />
+    <rect x="206" y="60" width="100" height="38" rx="14" fill="url(#goldGrad)" stroke="#ca8a04" stroke-width="2" />
+    <circle cx="256" cy="79" r="8" fill="#ffffff" opacity="0.9" />
 
-    <!-- Memo Ruled Content Lines -->
-    <rect x="180" y="152" width="130" height="12" rx="6" fill="#10b981" opacity="0.9" />
-    <rect x="180" y="184" width="160" height="10" rx="5" fill="#94a3b8" opacity="0.6" />
-    <rect x="180" y="210" width="140" height="10" rx="5" fill="#94a3b8" opacity="0.6" />
-    <rect x="180" y="236" width="110" height="10" rx="5" fill="#94a3b8" opacity="0.6" />
+    <!-- Checklist Item Lines -->
+    <rect x="175" y="145" width="130" height="14" rx="7" fill="#10b981" />
+    <rect x="175" y="178" width="165" height="12" rx="6" fill="#94a3b8" opacity="0.7" />
+    <rect x="175" y="206" width="140" height="12" rx="6" fill="#94a3b8" opacity="0.7" />
+    <rect x="175" y="234" width="115" height="12" rx="6" fill="#94a3b8" opacity="0.7" />
 
-    <!-- 2. Grocery Shopping Basket (Lower Half Floating Over Memo) -->
+    <!-- 2. Grocery Shopping Basket (Floating prominently) -->
     <g transform="translate(0, 30)">
-      <!-- Basket Base Outline -->
-      <path d="M120 270 L150 380 Q156 396 174 396 L338 396 Q356 396 362 380 L392 270 Z" fill="#047857" stroke="#ffffff" stroke-width="8" stroke-linejoin="round" />
-
-      <!-- Basket Weave Accent lines -->
-      <path d="M165 275 L182 390 M215 275 L225 390 M256 275 L256 390 M297 275 L287 390 M347 275 L330 390" stroke="#065f46" stroke-width="4" stroke-linecap="round" />
-      <path d="M135 310 Q256 325 377 310 M144 350 Q256 365 368 350" stroke="#065f46" stroke-width="4" fill="none" />
-
+      <!-- Basket Base -->
+      <path d="M120 270 L148 385 Q154 400 172 400 L340 400 Q358 400 364 385 L392 270 Z" fill="#047857" stroke="#ffffff" stroke-width="8" stroke-linejoin="round" />
+      <!-- Basket Weave -->
+      <path d="M165 275 L180 395 M212 275 L222 395 M256 275 L256 395 M300 275 L290 395 M347 275 L332 395" stroke="#065f46" stroke-width="4" stroke-linecap="round" />
+      <path d="M135 315 Q256 330 377 315 M142 355 Q256 370 370 355" stroke="#065f46" stroke-width="4" fill="none" />
       <!-- Basket Rim -->
-      <rect x="110" y="258" width="292" height="22" rx="11" fill="#10b981" stroke="#ffffff" stroke-width="6" />
-
+      <rect x="108" y="258" width="296" height="24" rx="12" fill="#10b981" stroke="#ffffff" stroke-width="6" />
       <!-- Basket Handle -->
-      <path d="M170 260 C170 170 342 170 342 260" fill="none" stroke="url(#goldGrad)" stroke-width="12" stroke-linecap="round" />
+      <path d="M165 260 C165 160 347 160 347 260" fill="none" stroke="url(#goldGrad)" stroke-width="12" stroke-linecap="round" />
     </g>
 
-    <!-- 3. Medicine Capsule Badge (Right Wing) -->
-    <g transform="translate(356, 210) rotate(35)" filter="url(#softShadow)">
-      <!-- Pill Capsule Body -->
-      <rect x="-24" y="-55" width="48" height="110" rx="24" fill="#ffffff" stroke="#0369a1" stroke-width="4" />
-      <!-- Pill Top Half (Sky Blue) -->
-      <path d="M -24 0 H 24 V -31 A 24 24 0 0 0 -24 -31 Z" fill="url(#skyGrad)" />
-      <!-- Pill Bottom Half (Mint/White) with small cross -->
-      <path d="M -5 18 H 5 M 0 13 V 23" stroke="#059669" stroke-width="3" stroke-linecap="round" />
+    <!-- 3. Medicine Capsule Badge -->
+    <g transform="translate(362, 215) rotate(35)">
+      <rect x="-26" y="-60" width="52" height="120" rx="26" fill="#ffffff" stroke="#0369a1" stroke-width="5" />
+      <path d="M -26 0 H 26 V -34 A 26 26 0 0 0 -26 -34 Z" fill="url(#capsuleGrad)" />
+      <line x1="-8" y1="20" x2="8" y2="20" stroke="#059669" stroke-width="4" stroke-linecap="round" />
+      <line x1="0" y1="12" x2="0" y2="28" stroke="#059669" stroke-width="4" stroke-linecap="round" />
     </g>
 
-    <!-- 4. Verified Golden Checkmark Stamp (Top Left) -->
-    <g transform="translate(136, 136)" filter="url(#badgeGlow)">
-      <circle cx="0" cy="0" r="32" fill="url(#goldGrad)" stroke="#ffffff" stroke-width="6" />
-      <path d="M-14 -2 L-4 8 L16 -12" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- 4. Golden Checkmark Badge -->
+    <g transform="translate(136, 136)">
+      <circle cx="0" cy="0" r="34" fill="url(#goldGrad)" stroke="#ffffff" stroke-width="6" />
+      <path d="M-15 -2 L-4 9 L18 -13" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
     </g>
   </g>
-
-  <!-- Clean Bottom Brand Tag: MY MEMO -->
-  <text x="256" y="472" text-anchor="middle" fill="#ecfdf5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="34" letter-spacing="4">MY MEMO</text>
 </svg>
