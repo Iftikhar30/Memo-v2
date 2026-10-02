@@ -34,9 +34,11 @@ export const Header: React.FC = () => {
       <div className="max-w-md mx-auto flex items-center justify-between">
         {/* App Title & Logo */}
         <Link to="/" className="flex items-center gap-2.5 active:scale-98 transition group cursor-pointer" title="হোম ড্যাশবোর্ড">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-sm shadow-emerald-700/20 group-hover:opacity-95 transition">
-            <ShoppingBag className="w-5 h-5 text-white" />
-          </div>
+          <img
+            src="/pwa-192x192.png"
+            alt="MY MEMO Logo"
+            className="w-10 h-10 rounded-xl shadow-xs shadow-emerald-700/20 group-hover:opacity-95 transition object-cover border border-emerald-600/20"
+          />
           <div>
             <div className="flex items-center gap-1.5">
               <h1 className="font-extrabold text-lg leading-tight tracking-tight text-slate-900 font-sans">
@@ -111,9 +113,11 @@ export const Header: React.FC = () => {
       {showIOSPrompt && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl border border-slate-200 text-center">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Download className="w-6 h-6" />
-            </div>
+            <img
+              src="/pwa-192x192.png"
+              alt="MY MEMO"
+              className="w-14 h-14 rounded-2xl mx-auto mb-3 shadow-md border border-slate-200 object-cover"
+            />
             <h3 className="text-base font-bold text-slate-900 mb-2">হোম স্ক্রিনে যোগ করুন</h3>
             <p className="text-xs text-slate-600 leading-relaxed mb-4">
               সাফারি ব্রাউজারের নিচের <strong>Share (শেয়ার)</strong> বাটনে ট্যাপ করে <strong>"Add to Home Screen"</strong> নির্বাচন করুন।
