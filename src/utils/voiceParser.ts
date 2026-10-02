@@ -3,7 +3,7 @@ import { MarketUnit } from '../types';
 export interface ParsedVoiceMarketItem {
   rawText: string;
   name: string;
-  quantity: number;
+  quantity: number | null;
   unit: MarketUnit;
   pricePerUnit: number | null;
   confidence?: number;
@@ -253,7 +253,7 @@ export function parseVoiceInputToMarketItem(rawSpokenText: string): ParsedVoiceM
   }
 
   // 3. Extract Quantity
-  let quantity = 1;
+  let quantity: number | null = null;
   let quantityMatchedText = '';
 
   // Check for combined word quantities like "সাড়ে তিন", "আড়াইশো", "দেড়", etc.
@@ -323,6 +323,10 @@ export function parseVoiceInputToMarketItem(rawSpokenText: string): ParsedVoiceM
       detectedUnit = 'লিটার';
     } else if (lowerName.includes('লবণ') || lowerName.includes('মসলা') || lowerName.includes('বিস্কুট')) {
       detectedUnit = 'প্যাকেট';
+    } else if (quantity !== null) {
+      detectedUnit = 'কেজি';
+    } else {
+      detectedUnit = 'অন্যান্য';
     }
   }
 
@@ -431,7 +435,7 @@ export function parseMultipleVoiceMarketItems(rawSpokenText: string): ParsedVoic
 
   for (const c of subChunks) {
     const item = parseVoiceInputToMarketItem(c);
-    if (item && item.name.trim() && item.quantity > 0) {
+    if (item && item.name.trim() && (item.quantity === null || item.quantity > 0)) {
       // Avoid adding items where name is purely punctuation or numbers
       const cleanName = item.name.replace(/[0-9\.,\-]/g, '').trim();
       if (cleanName.length > 0) {

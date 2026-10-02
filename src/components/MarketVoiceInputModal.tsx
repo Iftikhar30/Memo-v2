@@ -36,7 +36,7 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
   const [parsedItems, setParsedItems] = useState<ParsedVoiceMarketItem[]>([]);
   // Only holds the item(s) from the single latest voice utterance (no old history)
   const [lastSpokenItems, setLastSpokenItems] = useState<
-    Array<{ name: string; quantity: number; unit: MarketUnit; price: number | null }> | null
+    Array<{ name: string; quantity: number | null; unit: MarketUnit; price: number | null }> | null
   >(null);
   const [manualFallbackText, setManualFallbackText] = useState('');
   const [successToast, setSuccessToast] = useState<string | null>(null);
@@ -110,7 +110,7 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
   };
 
   const handleCommitItems = (itemsToCommit: ParsedVoiceMarketItem[]) => {
-    const valid = itemsToCommit.filter((it) => it.name.trim() && it.quantity > 0);
+    const valid = itemsToCommit.filter((it) => it.name.trim() && (it.quantity === null || it.quantity > 0));
     if (valid.length === 0) return;
 
     for (const it of valid) {
@@ -134,8 +134,9 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
     );
 
     if (valid.length === 1) {
+      const qtyStr = valid[0].quantity != null ? ` (${formatNum(valid[0].quantity, isBn)} ${valid[0].unit})` : '';
       setSuccessToast(
-        `✓ "${valid[0].name} (${formatNum(valid[0].quantity, isBn)} ${valid[0].unit})" যোগ করা হয়েছে!`
+        `✓ "${valid[0].name}${qtyStr}" যোগ করা হয়েছে!`
       );
     } else {
       setSuccessToast(`✓ এক সাথে ${formatNum(valid.length, isBn)}টি পণ্য সফলভাবে যোগ করা হয়েছে!`);
@@ -351,9 +352,15 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg text-xs">
-                        {formatNum(item.quantity, isBn)} {item.unit}
-                      </span>
+                      {item.quantity !== null && item.quantity > 0 ? (
+                        <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg text-xs">
+                          {formatNum(item.quantity, isBn)} {item.unit}
+                        </span>
+                      ) : (
+                        <span className="font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg text-xs">
+                          পরিমাণ ছাড়া
+                        </span>
+                      )}
                       <button
                         type="button"
                         onClick={() =>
@@ -446,9 +453,15 @@ export const MarketVoiceInputModal: React.FC<MarketVoiceInputModalProps> = ({
                           {formatCurrency(item.price, settings.currency, isBn)}/{item.unit}
                         </span>
                       )}
-                      <span className="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
-                        {formatNum(item.quantity, isBn)} {item.unit}
-                      </span>
+                      {item.quantity !== null && item.quantity > 0 ? (
+                        <span className="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
+                          {formatNum(item.quantity, isBn)} {item.unit}
+                        </span>
+                      ) : (
+                        <span className="font-medium text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                          পরিমাণ ছাড়া
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}

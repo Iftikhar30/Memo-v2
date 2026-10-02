@@ -138,13 +138,13 @@ export async function generateMemoImage(
       // Quantity + Unit
       ctx.fillStyle = '#0f172a';
       ctx.font = '600 26px -apple-system, "Hind Siliguri", "Segoe UI", Roboto, sans-serif';
-      const qtyStr = `${formatNum(item.quantity, isBn)} ${item.unit}`;
+      const qtyStr = item.quantity !== null && item.quantity !== undefined && item.quantity > 0 ? `${formatNum(item.quantity, isBn)} ${item.unit}` : '—';
       const qtyX = showPrice ? padding + cardWidth * 0.52 : padding + cardWidth * 0.75;
       ctx.fillText(qtyStr, qtyX, currentY);
 
       // Price (only if showPrice is true)
       if (showPrice) {
-        const itemPrice = item.pricePerUnit ? item.quantity * item.pricePerUnit : null;
+        const itemPrice = item.pricePerUnit ? (item.quantity !== null && item.quantity !== undefined ? item.quantity * item.pricePerUnit : item.pricePerUnit) : null;
         ctx.fillStyle = itemPrice ? '#059669' : '#94a3b8';
         ctx.font = '700 26px -apple-system, "Hind Siliguri", "Segoe UI", Roboto, sans-serif';
         const priceStr = itemPrice !== null ? formatCurrency(itemPrice, settings.currency, isBn) : '—';

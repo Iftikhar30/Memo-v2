@@ -46,7 +46,7 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
 
   // Form states for Add/Edit
   const [formName, setFormName] = useState('');
-  const [formQty, setFormQty] = useState<number>(1);
+  const [formQty, setFormQty] = useState<string>('');
   const [formUnit, setFormUnit] = useState<MarketUnit>('কেজি');
   const [formPrice, setFormPrice] = useState<string>('');
   const [formNote, setFormNote] = useState<string>('');
@@ -69,11 +69,13 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
   const pendingCount = totalItemsCount - purchasedCount;
 
   const totalEstimatedCost = marketState.items.reduce((sum, item) => {
-    return sum + (item.pricePerUnit ? item.quantity * item.pricePerUnit : 0);
+    return sum + (item.pricePerUnit ? (item.quantity !== null && item.quantity !== undefined ? item.quantity * item.pricePerUnit : item.pricePerUnit) : 0);
   }, 0);
 
   const purchasedCost = marketState.items.reduce((sum, item) => {
-    return item.isPurchased ? sum + (item.pricePerUnit ? item.quantity * item.pricePerUnit : 0) : sum;
+    return item.isPurchased
+      ? sum + (item.pricePerUnit ? (item.quantity !== null && item.quantity !== undefined ? item.quantity * item.pricePerUnit : item.pricePerUnit) : 0)
+      : sum;
   }, 0);
 
   const pendingCost = totalEstimatedCost - purchasedCost;
@@ -96,6 +98,10 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
   const handleQuantityStep = (id: string, delta: number) => {
     const updated = marketState.items.map((item) => {
       if (item.id === id) {
+        if (item.quantity === null || item.quantity === undefined) {
+          const newQty = delta > 0 ? 1 : null;
+          return { ...item, quantity: newQty };
+        }
         const newQty = Math.max(0.1, Number((item.quantity + delta).toFixed(2)));
         return { ...item, quantity: newQty };
       }
@@ -130,7 +136,7 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
   const openAddModal = () => {
     setEditingItem(null);
     setFormName('');
-    setFormQty(1);
+    setFormQty('');
     setFormUnit('কেজি');
     setFormPrice('');
     setFormNote('');
@@ -140,8 +146,8 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
   const openEditModal = (item: MarketItem) => {
     setEditingItem(item);
     setFormName(item.name);
-    setFormQty(item.quantity);
-    setFormUnit(item.unit);
+    setFormQty(item.quantity !== null && item.quantity !== undefined ? String(item.quantity) : '');
+    setFormUnit(item.unit || 'কেজি');
     setFormPrice(item.pricePerUnit ? String(item.pricePerUnit) : '');
     setFormNote(item.note || '');
     setIsModalOpen(true);
@@ -150,6 +156,9 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
   const handleSaveForm = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim()) return;
+
+    const parsedQty = formQty.trim() ? parseFloat(formQty) : null;
+    const cleanQty = parsedQty !== null && !isNaN(parsedQty) && parsedQty > 0 ? parsedQty : null;
 
     const parsedPrice = formPrice.trim() ? parseFloat(formPrice) : null;
     const cleanPrice = parsedPrice && !isNaN(parsedPrice) && parsedPrice >= 0 ? parsedPrice : null;
@@ -161,7 +170,7 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
           ? {
               ...item,
               name: formName.trim(),
-              quantity: formQty,
+              quantity: cleanQty,
               unit: formUnit,
               pricePerUnit: cleanPrice,
               note: formNote.trim() || undefined,
@@ -174,7 +183,7 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
       const newItem: MarketItem = {
         id: `m-${Date.now()}`,
         name: formName.trim(),
-        quantity: formQty,
+        quantity: cleanQty,
         unit: formUnit,
         pricePerUnit: cleanPrice,
         note: formNote.trim() || undefined,
@@ -249,7 +258,8 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
       items: [newItem, ...marketState.items],
       updatedAt: Date.now(),
     });
-    showToast(`✓ "${newItem.name} (${formatNum(newItem.quantity, isBn)} ${newItem.unit})" যোগ হয়েছে!`);
+    const qtyText = newItem.quantity !== null && newItem.quantity !== undefined ? ` (${formatNum(newItem.quantity, isBn)} ${newItem.unit})` : '';
+    showToast(`✓ "${newItem.name}${qtyText}" যোগ হয়েছে!`);
   };
 
   // Filtered list
@@ -420,7 +430,7 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
       ) : (
         <div className="space-y-2.5">
           {filteredItems.map((item, index) => {
-            const itemPrice = item.pricePerUnit ? item.quantity * item.pricePerUnit : null;
+            const itemPrice = item.pricePerUnit ? (item.quantity !== null && item.quantity !== undefined ? item.quantity * item.pricePerUnit : item.pricePerUnit) : null;
 
             return (
               <div
@@ -465,13 +475,19 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
 
                       {/* Quantity & Unit Price */}
                       <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-600">
-                        <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md">
-                          {formatNum(item.quantity, isBn)} {item.unit}
-                        </span>
+                        {item.quantity !== null && item.quantity !== undefined && item.quantity > 0 ? (
+                          <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md">
+                            {formatNum(item.quantity, isBn)} {item.unit}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 font-medium bg-slate-50 border border-slate-200/80 px-2 py-0.5 rounded-md text-[11px]">
+                            পরিমাণ নির্দিষ্ট নয়
+                          </span>
+                        )}
 
                         {item.pricePerUnit && (
                           <span className="text-[11px] text-slate-500">
-                            (দর: {formatCurrency(item.pricePerUnit, settings.currency, isBn)}/{item.unit})
+                            (দর: {formatCurrency(item.pricePerUnit, settings.currency, isBn)}{item.quantity !== null && item.quantity !== undefined && item.quantity > 0 ? `/${item.unit}` : ''})
                           </span>
                         )}
                       </div>
@@ -602,22 +618,25 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    পরিমাণ <span className="text-rose-600">*</span>
+                    পরিমাণ <span className="text-slate-400 font-normal">(ঐচ্ছিক)</span>
                   </label>
                   <input
                     type="number"
                     step="any"
                     min="0.01"
-                    required
                     value={formQty}
-                    onChange={(e) => setFormQty(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setFormQty(e.target.value)}
+                    placeholder="যেমন: ১, ২, ৫০০"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-sm font-bold focus:outline-hidden"
                   />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">
+                    পরিমাণ না দিলেও পণ্য যোগ হবে
+                  </span>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    একক (Unit) <span className="text-rose-600">*</span>
+                    একক (Unit) <span className="text-slate-400 font-normal">(ঐচ্ছিক)</span>
                   </label>
                   <select
                     value={formUnit}
@@ -644,13 +663,22 @@ export const MarketMemoView: React.FC<MarketMemoViewProps> = ({
                   min="0"
                   value={formPrice}
                   onChange={(e) => setFormPrice(e.target.value)}
-                  placeholder="যেমন: ৭০ (প্রতি কেজির দর)"
+                  placeholder="যেমন: ৭০ (প্রতি কেজির দর বা দাম)"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-sm font-medium focus:outline-hidden"
                 />
                 {formPrice && !isNaN(parseFloat(formPrice)) && (
                   <div className="text-xs text-emerald-700 font-bold mt-1">
-                    আনুমানিক মোট:{' '}
-                    {formatCurrency(formQty * parseFloat(formPrice), settings.currency, isBn)}
+                    {formQty && parseFloat(formQty) > 0 ? (
+                      <>
+                        আনুমানিক মোট:{' '}
+                        {formatCurrency(parseFloat(formQty) * parseFloat(formPrice), settings.currency, isBn)}
+                      </>
+                    ) : (
+                      <>
+                        মোট মূল্য:{' '}
+                        {formatCurrency(parseFloat(formPrice), settings.currency, isBn)}
+                      </>
+                    )}
                   </div>
                 )}
               </div>

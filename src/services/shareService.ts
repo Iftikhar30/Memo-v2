@@ -27,12 +27,15 @@ export function formatMemoAsText(
   if (memo.type === 'market' && memo.marketItems) {
     memo.marketItems.forEach((item, index) => {
       const mark = item.isPurchased ? '☑' : '☐';
-      const qty = `${formatNum(item.quantity, isBn)} ${item.unit}`;
-      const price = showPrice && item.pricePerUnit
-        ? ` — ${formatCurrency(item.quantity * item.pricePerUnit, settings.currency, isBn)}`
+      const qtyStr = item.quantity !== null && item.quantity !== undefined && item.quantity > 0 ? `: ${formatNum(item.quantity, isBn)} ${item.unit}` : '';
+      const itemTotalPrice = item.pricePerUnit
+        ? (item.quantity !== null && item.quantity !== undefined ? item.quantity * item.pricePerUnit : item.pricePerUnit)
+        : null;
+      const price = showPrice && itemTotalPrice
+        ? ` — ${formatCurrency(itemTotalPrice, settings.currency, isBn)}`
         : '';
       const note = item.note ? ` (${item.note})` : '';
-      lines.push(`${mark} ${index + 1}. ${item.name}: ${qty}${price}${note}`);
+      lines.push(`${mark} ${index + 1}. ${item.name}${qtyStr}${price}${note}`);
     });
   } else if (isMedicine) {
     if (memo.medicineItems && memo.medicineItems.length > 0) {

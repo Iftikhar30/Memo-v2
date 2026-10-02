@@ -44,7 +44,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   const marketPurchasedCount = marketState.items.filter((i) => i.isPurchased).length;
   const marketPendingCount = marketTotalCount - marketPurchasedCount;
   const marketEstimatedTotal = marketState.items.reduce((sum, item) => {
-    return sum + (item.pricePerUnit ? item.quantity * item.pricePerUnit : 0);
+    return sum + (item.pricePerUnit ? (item.quantity !== null && item.quantity !== undefined ? item.quantity * item.pricePerUnit : item.pricePerUnit) : 0);
   }, 0);
 
   // Medicine stats

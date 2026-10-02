@@ -12,7 +12,7 @@ export type MarketUnit =
 export interface MarketItem {
   id: string;
   name: string;
-  quantity: number;
+  quantity: number | null;
   unit: MarketUnit;
   pricePerUnit: number | null; // Price per unit (e.g. ৳ per kg)
   note?: string;

@@ -100,7 +100,7 @@ export const SavedMemosView: React.FC<SavedMemosViewProps> = ({
   // Helper to recalculate total for Market Memo
   const recalculateMarketTotal = (items: MarketItem[]): number => {
     return items.reduce((sum, item) => {
-      return sum + (item.pricePerUnit ? item.quantity * item.pricePerUnit : 0);
+      return sum + (item.pricePerUnit ? (item.quantity !== null && item.quantity !== undefined ? item.quantity * item.pricePerUnit : item.pricePerUnit) : 0);
     }, 0);
   };
 
@@ -373,7 +373,7 @@ export const SavedMemosView: React.FC<SavedMemosViewProps> = ({
                         key={item.id}
                         className="text-[10px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md"
                       >
-                        {item.name} ({formatNum(item.quantity, isBn)} {item.unit})
+                        {item.name}{item.quantity !== null && item.quantity !== undefined && item.quantity > 0 ? ` (${formatNum(item.quantity, isBn)} ${item.unit})` : ''}
                       </span>
                     ))}
 
@@ -583,7 +583,13 @@ export const SavedMemosView: React.FC<SavedMemosViewProps> = ({
                           ) : (
                             <strong className="text-emerald-700 font-extrabold">
                               {item.pricePerUnit
-                                ? formatCurrency(item.quantity * item.pricePerUnit, settings.currency, isBn)
+                                ? formatCurrency(
+                                    item.quantity !== null && item.quantity !== undefined
+                                      ? item.quantity * item.pricePerUnit
+                                      : item.pricePerUnit,
+                                    settings.currency,
+                                    isBn
+                                  )
                                 : '—'}
                             </strong>
                           )}
@@ -597,12 +603,14 @@ export const SavedMemosView: React.FC<SavedMemosViewProps> = ({
                             <span className="text-slate-500">পরিমাণ:</span>
                             <input
                               type="number"
-                              min="0.1"
+                              min="0"
                               step="any"
-                              value={item.quantity}
-                              onChange={(e) =>
-                                handleUpdateMarketItem(item.id, 'quantity', parseFloat(e.target.value) || 1)
-                              }
+                              value={item.quantity !== null && item.quantity !== undefined ? item.quantity : ''}
+                              onChange={(e) => {
+                                const val = e.target.value.trim() ? parseFloat(e.target.value) : null;
+                                handleUpdateMarketItem(item.id, 'quantity', val !== null && !isNaN(val) && val > 0 ? val : null);
+                              }}
+                              placeholder="ঐচ্ছিক"
                               className="w-14 border border-slate-300 rounded-lg px-1.5 py-0.5 text-center font-bold text-slate-900 focus:outline-hidden"
                             />
                             <select
@@ -630,9 +638,13 @@ export const SavedMemosView: React.FC<SavedMemosViewProps> = ({
                           </div>
                         ) : (
                           <div className="text-slate-500 flex items-center gap-2">
-                            <span>
-                              পরিমাণ: <strong className="text-slate-800">{formatNum(item.quantity, isBn)} {item.unit}</strong>
-                            </span>
+                            {item.quantity !== null && item.quantity !== undefined && item.quantity > 0 ? (
+                              <span>
+                                পরিমাণ: <strong className="text-slate-800">{formatNum(item.quantity, isBn)} {item.unit}</strong>
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-medium">পরিমাণ নির্দিষ্ট নয়</span>
+                            )}
                             {item.note && <span>• {item.note}</span>}
                           </div>
                         )}
