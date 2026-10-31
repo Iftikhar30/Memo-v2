@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">MY MEMO</string>
-    <string name="title_activity_main">MY MEMO</string>
-    <string name="package_name">com.iftikhar.mymemo</string>
-    <string name="custom_url_scheme">com.iftikhar.mymemo</string>
-</resources>
